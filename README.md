@@ -28,8 +28,6 @@
 - L298N H-bridge motor drivers (2 units)
 - 4 DC motors (3V-6V, 110 RPM)
 - Microphone and speaker
-- Gemini communication library
-- Python 3.x
 
 ## Installation
 
