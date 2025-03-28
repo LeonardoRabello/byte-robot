@@ -1,5 +1,6 @@
 #Importing libraries
-import google.generativeai as genai
+from google import genai
+import os
 from dotenv import load_dotenv
 from gtts import gTTS
 import pygame
@@ -8,33 +9,36 @@ import pygame
 load_dotenv()
 
 #setting up AI
-genai.configure(api_key=os.getenv("API_KEY"))
-model = genai.GenerativeModel('gemini-1.5-flash')
-chat = model.start_chat(history=[])
+client = genai.Client(api_key=os.getenv("API_KEY"))
+chat = client.chats.create(model="gemini-2.0-flash")
 pygame.mixer.init()
 
 #input
-with open('input.txt', 'r') as file:
-   text = file.read()
-print('a')
-video_file = genai.upload_file(path='/data/input/video.flv')
-print('a')
+def fast_chat(text):
+    response = chat.send_message(text)
+    #output
+    print(response.text)
+    tts = gTTS(response.text, 'com.br', 'pt')
+    tts.save('output.mp3')
+    sound = pygame.mixer.Sound('output.mp3')
+    sound.play()
 
-while video_file.state.name == 'PROCESSING':
-    pass
-if video_file.state.name == 'FAILED':
-    raise ValueError(video_file.state.name)
-print('a')
+    #waiting audio end
+    while pygame.mixer.get_busy():
+        pass
 
-response = chat.send_message([video_file, 'o que voce ve'])
+def video_chat(video_file, text):
+    response = chat.send_message([video_file, text])
+    #output
+    print(response.text)
+    tts = gTTS(response.text, 'com.br', 'pt')
+    tts.save('/data/output/output.mp3')
+    sound = pygame.mixer.Sound('/data/output/output.mp3')
+    sound.play()
 
-#output
-print(response.text)
-tts = gTTS(response.text, 'com.br', 'pt')
-tts.save('/data/output/output.mp3')
-sound = pygame.mixer.Sound('/data/output/output.mp3')
-sound.play()
+    #waiting audio end
+    while pygame.mixer.get_busy():
+        pass
 
-#waiting audio end
-while pygame.mixer.get_busy():
-    pass
+
+

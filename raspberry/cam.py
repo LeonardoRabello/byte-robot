@@ -9,16 +9,17 @@ video_config = cam.create_video_configuration(
     )
 cam.configure(video_config)
 
-cam.start_and_record_video("video.h264")
+cam.start_and_record_video("data/input/video.h264")
 print('gravando')
 sleep(7)
 cam.stop_recording()
 cam.close()
 print('exportando')
 command = ['ffmpeg',
-           '-i', 'video.h264',
+           '-i', 'data/input/video.h264',
            '-c:v', 'flv1',
            '-c:a', 'mp3',
-            'video.flv']
+           "-preset", "ultrafast",
+            'data/input/video.flv']
 subprocess.run(command, check=True)
 print('The archive was converted')
