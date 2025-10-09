@@ -1,53 +1,74 @@
-
-import RPi.GPIO as GPIO
 import keyboard
+import pigpio
+from time import sleep
 
-class Motor():
-    def __init__(self, RPWM1, LPWM1, RPWM2, LPWM2):
-        GPIO.setup(RPWM1, GPIO.OUT)
-        GPIO.setup(LPWM1, GPIO.OUT)
-        GPIO.setup(RPWM2, GPIO.OUT)
-        GPIO.setup(LPWM2, GPIO.OUT)
-        self.foward_speed_1 = GPIO.PWM(RPWM1, 1000)
-        self.reverse_speed_1 = GPIO.PWM(LPWM1, 1000)
-        self.foward_speed_2 = GPIO.PWM(RPWM2, 1000)
-        self.reverse_speed_2 = GPIO.PWM(LPWM2, 1000)
+
+class Motor:
+    def __init__(self, PWM1, PWM2, R_EN1, L_EN1, R_EN2, L_EN2):
+        self.pi = pigpio.pi()  # conecta ao daemon pigpio
+        self.freq = 1000  # Hz
+
+        # Configura enable/direção como saída digital
+        for pin in [R_EN1, L_EN1, R_EN2, L_EN2]:
+            self.pi.set_mode(pin, pigpio.OUTPUT)
+            self.pi.write(pin, 0)  # garante motor parado no início
 
     def move_foward(self, speed):
-        self.foward_speed_1.start(speed)
-        self.foward_speed_2.start(speed)
-        self.reverse_speed_1.start(0)
-        self.reverse_speed_2.start(0)
+        self.pi.write(self.R_EN1, 1)
+        self.pi.write(self.L_EN1, 0)
+        self.pi.write(self.R_EN2, 1)
+        self.pi.write(self.L_EN2, 0)
+        self.pi.hardware_PWM(self.PWM1, self.freq, int(speed * 10000))
+        self.pi.hardware_PWM(self.PWM2, self.freq, int(speed * 10000))
+
     def move_back(self, speed):
-        self.foward_speed_1.start(0)
-        self.foward_speed_2.start(0)
-        self.reverse_speed_1.start(speed)
-        self.reverse_speed_2.start(speed)
+        self.pi.write(self.R_EN1, 0)
+        self.pi.write(self.L_EN1, 1)
+        self.pi.write(self.R_EN2, 0)
+        self.pi.write(self.L_EN2, 1)
+        self.pi.hardware_PWM(self.PWM1, self.freq, int(speed * 10000))
+        self.pi.hardware_PWM(self.PWM2, self.freq, int(speed * 10000))
+
     def move_right(self, speed):
-        self.foward_speed_1.start(speed)
-        self.foward_speed_2.start(speed / 2)
-        self.reverse_speed_1.start(0)
-        self.reverse_speed_2.start(0)
+        self.pi.write(self.R_EN1, 1)
+        self.pi.write(self.L_EN1, 0)
+        self.pi.write(self.R_EN2, 1)
+        self.pi.write(self.L_EN2, 0)
+        self.pi.hardware_PWM(self.PWM1, self.freq, int(speed * 10000))
+        self.pi.hardware_PWM(self.PWM2, self.freq, int(speed * 10000 / 2))
+
     def move_left(self, speed):
-        self.foward_speed_1.start(speed / 2)
-        self.foward_speed_2.start(speed)
-        self.reverse_speed_1.start(0)
-        self.reverse_speed_2.start(0)
+        self.pi.write(self.R_EN1, 1)
+        self.pi.write(self.L_EN1, 0)
+        self.pi.write(self.R_EN2, 1)
+        self.pi.write(self.L_EN2, 0)
+        self.pi.hardware_PWM(self.PWM1, self.freq, int(speed * 10000 / 2))
+        self.pi.hardware_PWM(self.PWM2, self.freq, int(speed * 10000))
+
     def move_back_left(self, speed):
-        self.foward_speed_1.start(0)
-        self.foward_speed_2.start(0)
-        self.reverse_speed_1.start(speed / 2)
-        self.reverse_speed_2.start(speed)
+        self.pi.write(self.R_EN1, 0)
+        self.pi.write(self.L_EN1, 1)
+        self.pi.write(self.R_EN2, 0)
+        self.pi.write(self.L_EN2, 1)
+        self.pi.hardware_PWM(self.PWM1, self.freq, int(speed * 10000 / 2))
+        self.pi.hardware_PWM(self.PWM2, self.freq, int(speed * 10000))
+
     def move_back_right(self, speed):
-        self.foward_speed_1.start(0)
-        self.foward_speed_2.start(0)
-        self.reverse_speed_1.start(speed)
-        self.reverse_speed_2.start(speed / 2)
+        self.pi.write(self.R_EN1, 0)
+        self.pi.write(self.L_EN1, 1)
+        self.pi.write(self.R_EN2, 0)
+        self.pi.write(self.L_EN2, 1)
+        self.pi.hardware_PWM(self.PWM1, self.freq, int(speed * 10000))
+        self.pi.hardware_PWM(self.PWM2, self.freq, int(speed * 10000 / 2))
+
     def breaks(self):
-        self.foward_speed_1.start(0)
-        self.foward_speed_2.start(0)
-        self.reverse_speed_1.start(0)
-        self.reverse_speed_2.start(0)
+        self.pi.write(self.R_EN1, 0)
+        self.pi.write(self.L_EN1, 0)
+        self.pi.write(self.R_EN2, 0)
+        self.pi.write(self.L_EN2, 0)
+        self.pi.hardware_PWM(self.PWM1, 0, int(0))
+        self.pi.hardware_PWM(self.PWM2, 0, int(0))
+
     def move(self, speed):
         while True:
             if keyboard.is_pressed('W'):
@@ -63,10 +84,6 @@ class Motor():
             elif keyboard.is_pressed('D'):
                 self.move_back_right(speed)
             elif keyboard.is_pressed('X'):
-                breakpoint
-            else:
-                self.breaks()
-
-
-
-    
+                break
+            sleep(0.1)  # pequeno delay para evitar uso excessivo da CPU
+        self.pi.stop()
