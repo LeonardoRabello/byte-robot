@@ -1,22 +1,28 @@
-from luma.led_matrix.device import max7219
-from luma.emulator.device import pygame
+import os
 from PIL import Image
+from luma.core.interface.serial import spi, noop
+from luma.led_matrix.device import max7219
+from luma.core.render import canvas
 
+class Matrizes:
+    def __init__(self, din=10, clk=11, cs=8, modulos_n=16):
+        self.modulos_n = modulos_n
+        self.default_image = "../faces/happy.png"
 
-class faces:
-    def __init__(self, contrast: int = 127):
-        self.matrix = pygame(24, 24, 0, "1")
-        self.matrix.contrast(contrast)
+        self.serial = spi(port=0, device=0, gpio=noop())
 
-    def split_face_and_message(self, message: str):
-        output, face = message.split("| ")
-        return output, face
+        self.device = max7219(
+            self.serial,
+            cascaded=self.modulos_n,
+            block_orientation=0,
+            rotate=0
+        )
 
-    def show_face(self, file: str):
-        try:
-            face = Image.open(f"faces/{file}")
-        except:
-            face = "happy.png"
-        self.matrix.display(face)
+    def mostrar_imagem(self, path):
+        caminho = path if os.path.exists(path) else self.default_image
+        img = Image.open(caminho).convert("1")
 
+        self.device.clear()
+        with canvas(self.device) as draw:
+            draw.bitmap((0, 0), img, fill="white")
 
