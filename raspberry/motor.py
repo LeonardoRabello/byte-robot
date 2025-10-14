@@ -5,7 +5,58 @@ from time import sleep
 
 class Motor:
     def __init__(self, PWM1, PWM2, R_EN1, L_EN1, R_EN2, L_EN2):
-        self.pi = pigpio.pi()  # conecta ao daemon pigpio
+        self.pi = pigpio.pi()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
         self.freq = 1000  # Hz
 
         # Configura enable/direção como saída digital

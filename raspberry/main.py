@@ -11,7 +11,7 @@ API_KEY = os.getenv("API_KEY")
 
 client = OpenAiClient(API_KEY)
 faces = faces()
-motor = Motor(12, 13, 22, 23, 24, 25)  # PWM1, PWM2, R_EN1, L_EN1, R_EN2, L_EN2 (PWM Motor 1 -> 12, 18 PWM Motor 2 -> 13, 19)
+motor = Motor(12, 13, 22, 23, 8, 25)  # PWM1, PWM2, R_EN1, L_EN1, R_EN2, L_EN2 (PWM Motor 1 -> 12, 18 PWM Motor 2 -> 13, 19)
 with open("raspberry/instructions.txt", "r", encoding="UTF-8") as file:
     instructions = file.read()
 
